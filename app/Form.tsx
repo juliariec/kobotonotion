@@ -16,18 +16,14 @@ import {
   Td,
 } from "@chakra-ui/react";
 import axios from "axios";
-
-interface Result {
-  id: string;
-  status: string;
-}
+import { Result } from "@/lib/interfaces";
 
 const FormComponent: React.FC = () => {
   const [integrationToken, setIntegrationToken] = useState<string>("");
   const [databaseId, setDatabaseId] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<Result[] | null>(null);
+  const [results, setResults] = useState<Result[]>();
   const toast = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +49,7 @@ const FormComponent: React.FC = () => {
       const base64File = reader.result as string;
 
       setLoading(true);
-      setResults(null);
+      setResults([] as Result[]);
 
       try {
         const response = await axios.post("/api/submit", {
@@ -122,25 +118,27 @@ const FormComponent: React.FC = () => {
         </Button>
       </form>
 
-      {results && (
+      {!!results?.length ? (
         <Box mt={8}>
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>ID</Th>
+                <Th>Title</Th>
                 <Th>Status</Th>
               </Tr>
             </Thead>
             <Tbody>
               {results.map((result) => (
-                <Tr key={result.id}>
-                  <Td>{result.id}</Td>
+                <Tr key={result.title}>
+                  <Td>{result.title}</Td>
                   <Td>{result.status}</Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
+      ) : (
+        <>No results.</>
       )}
     </Box>
   );
