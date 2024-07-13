@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -18,13 +18,24 @@ import {
 import axios from "axios";
 import { Result } from "@/lib/interfaces";
 
+const LS_INTEGRATION_TOKEN = "integrationToken";
+const LS_DATABASE_ID = "databaseId";
+
 const FormComponent: React.FC = () => {
   const [integrationToken, setIntegrationToken] = useState<string>("");
   const [databaseId, setDatabaseId] = useState<string>("");
+
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [results, setResults] = useState<Result[]>();
   const toast = useToast();
+
+  useEffect(() => {
+    if (localStorage && !!localStorage.getItem(LS_INTEGRATION_TOKEN))
+      setIntegrationToken(localStorage.getItem(LS_INTEGRATION_TOKEN) as string);
+    if (localStorage && !!localStorage.getItem(LS_DATABASE_ID))
+      setDatabaseId(localStorage.getItem(LS_DATABASE_ID) as string);
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0] || null;
@@ -43,6 +54,9 @@ const FormComponent: React.FC = () => {
       });
       return;
     }
+
+    localStorage.setItem(LS_INTEGRATION_TOKEN, integrationToken);
+    localStorage.setItem(LS_DATABASE_ID, databaseId);
 
     const reader = new FileReader();
     reader.onloadend = async () => {
