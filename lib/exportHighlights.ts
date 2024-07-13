@@ -11,10 +11,8 @@ async function exportHighlights(
   databaseFile: File
 ): Promise<Result[]> {
   let bookResults = [] as Result[];
-
   try {
     const notion = new Client({ auth: integrationToken });
-
     // set up files
     const bytes = await databaseFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -25,7 +23,6 @@ async function exportHighlights(
     );
     await fs.mkdir(path.dirname(targetPath), { recursive: true });
     await fs.writeFile(targetPath, buffer);
-
     const db = new Database(targetPath);
     const bookList = db.prepare(getBookListQuery).all() as Book[];
 
@@ -33,7 +30,6 @@ async function exportHighlights(
       try {
         // Remove subtitles from book title
         const title = book.Title.split(":")[0];
-
         // Check Notion database for the book
         const response = await notion.databases.query({
           database_id: databaseId,
@@ -76,7 +72,7 @@ async function exportHighlights(
           object: "block",
           type: "heading_1",
           heading_1: {
-            text: [{ type: "text", text: { content: "Highlights" } }],
+            rich_text: [{ type: "text", text: { content: "Highlights" } }],
           },
         });
 
@@ -87,7 +83,9 @@ async function exportHighlights(
               object: "block",
               type: "paragraph",
               paragraph: {
-                text: [{ type: "text", text: { content: highlight.Text } }],
+                rich_text: [
+                  { type: "text", text: { content: highlight.Text } },
+                ],
               },
             });
           }
@@ -98,7 +96,7 @@ async function exportHighlights(
           block_id: string,
           children: any[]
         ) => {
-          const chunkSize = 10;
+          const chunkSize = 100;
           for (let i = 0; i < children.length; i += chunkSize) {
             const chunk = children.slice(i, i + chunkSize);
             await notion.blocks.children.append({
@@ -117,7 +115,6 @@ async function exportHighlights(
         });
 
         bookResults.push({ title, status: "uploaded" });
-
         console.log(`Uploaded highlights for ${title}.`);
       } catch (error) {
         console.error(`Error with ${book.Title}: `, error);
