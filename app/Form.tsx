@@ -1,25 +1,26 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { Result } from "@/lib/interfaces";
 import {
   Box,
   Button,
   FormControl,
   FormLabel,
   Input,
-  useToast,
   Spinner,
   Table,
-  Thead,
   Tbody,
-  Tr,
-  Th,
   Td,
+  Th,
+  Thead,
+  Tr,
+  useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
-import { Result } from "@/lib/interfaces";
+import React, { useEffect, useState } from "react";
+import { ERROR_TOAST, MISSING_TOAST, SUCCESS_TOAST } from "./toasts";
 
-const LS_INTEGRATION_TOKEN = "integrationToken";
-const LS_DATABASE_ID = "databaseId";
+export const INTEGRATION_TOKEN = "integrationToken";
+export const DATABASE_ID = "databaseId";
+export const DATABASE_FILE = "databaseFile";
 
 const FormComponent: React.FC = () => {
   const [integrationToken, setIntegrationToken] = useState<string>("");
@@ -31,10 +32,10 @@ const FormComponent: React.FC = () => {
   const toast = useToast();
 
   useEffect(() => {
-    if (localStorage && !!localStorage.getItem(LS_INTEGRATION_TOKEN))
-      setIntegrationToken(localStorage.getItem(LS_INTEGRATION_TOKEN) as string);
-    if (localStorage && !!localStorage.getItem(LS_DATABASE_ID))
-      setDatabaseId(localStorage.getItem(LS_DATABASE_ID) as string);
+    if (localStorage && !!localStorage.getItem(INTEGRATION_TOKEN))
+      setIntegrationToken(localStorage.getItem(INTEGRATION_TOKEN) as string);
+    if (localStorage && !!localStorage.getItem(DATABASE_ID))
+      setDatabaseId(localStorage.getItem(DATABASE_ID) as string);
   }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,56 +45,43 @@ const FormComponent: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
     if (!integrationToken || !databaseId || !file) {
-      toast({
-        title: "Missing information",
-        description: "Please fill out all fields and upload a valid file.",
-        status: "warning",
-        duration: 3000,
-        isClosable: true,
-      });
+      toast(MISSING_TOAST);
       return;
     }
 
-    localStorage.setItem(LS_INTEGRATION_TOKEN, integrationToken);
-    localStorage.setItem(LS_DATABASE_ID, databaseId);
+    localStorage.setItem(INTEGRATION_TOKEN, integrationToken);
+    localStorage.setItem(DATABASE_ID, databaseId);
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64File = reader.result as string;
+    const formData = new FormData();
+    formData.append("token", integrationToken);
+    formData.append("dbid", databaseId);
+    formData.append("file", file);
 
+    try {
       setLoading(true);
-      setResults([] as Result[]);
+      setResults([]);
 
-      try {
-        const response = await axios.post("/api/submit", {
-          integrationToken,
-          databaseId,
-          sqliteFile: base64File,
-        });
+      const response = await fetch("/api/submit", {
+        method: "POST",
+        body: formData,
+      });
 
-        setResults(response.data.results);
-        toast({
-          title: "Success",
-          description: "Your data has been submitted successfully.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "There was an error submitting your data.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        console.log("response not ok");
+        toast(ERROR_TOAST);
       }
-    };
 
-    reader.readAsDataURL(file);
+      const data = await response.json();
+      setResults(data.results);
+      toast(SUCCESS_TOAST);
+    } catch (error) {
+      console.log("error");
+      toast(ERROR_TOAST);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -119,7 +107,7 @@ const FormComponent: React.FC = () => {
 
         <FormControl isRequired mb={4}>
           <FormLabel>SQLite File</FormLabel>
-          <Input type="file" accept=".sqlite" onChange={handleFileChange} />
+          <Input type="file" onChange={handleFileChange} />
         </FormControl>
 
         <Button
