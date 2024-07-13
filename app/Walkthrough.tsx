@@ -13,24 +13,80 @@ import {
   ModalCloseButton,
   Button,
   Box,
+  Link,
+  Text,
+  Code,
   useDisclosure,
+} from "@chakra-ui/react";
+
+import {
+  List,
+  ListItem,
+  ListIcon,
+  OrderedList,
+  UnorderedList,
 } from "@chakra-ui/react";
 
 const instructions = [
   {
-    title: "Create Integration",
+    title: "Create Notion Integration",
     description: "Create a custom integration in Notion",
-    body: "Navigate to Notion and create a custom integration",
+    body: (
+      <OrderedList spacing={4}>
+        <ListItem>
+          Navigate to{" "}
+          <Link
+            color="teal"
+            href="https://www.notion.so/profile/integrations"
+            isExternal
+          >
+            https://www.notion.so/profile/integrations
+          </Link>
+        </ListItem>
+        <ListItem>
+          Click &quot;New Integration&quot; and enter Name and Workspace details
+        </ListItem>
+        <ListItem>Copy your Internal Integration Secret for later</ListItem>
+      </OrderedList>
+    ),
   },
   {
-    title: "Create Database",
+    title: "Create Notion Database",
     description: "Create a target database in Notion",
-    body: "Navigate to Notion and create a new database",
+    body: (
+      <OrderedList spacing={4}>
+        <ListItem>
+          In your Notion workspace, create a new database to store your Kobo
+          highlights
+        </ListItem>
+        <ListItem>
+          Ensure your database has a checkbox property named Highlights and a
+          text property named Title
+        </ListItem>
+        <ListItem>
+          To allow your integration to access this database, click the three
+          dots in the upper right hand corner, navigate to Connections &gt;
+          Connect To, and then select the name of your newly created integration
+        </ListItem>
+        <ListItem>
+          While viewing your database page, copy the Database ID from the URL by
+          selecting the text between <Code>.so/</Code> and <Code>?v=</Code>
+        </ListItem>
+      </OrderedList>
+    ),
   },
   {
-    title: "Save Integration Details",
-    description: "Copy integration key and database ID",
-    body: "Copy your integration key and your database ID for input",
+    title: "Get Kobo Data",
+    description:
+      "Get the data from your Kobo in order to upload for processing",
+    body: (
+      <OrderedList spacing={4}>
+        <ListItem>Connect your Kobo device to your computer</ListItem>
+        <ListItem>
+          Navigate to <i>folder name</i> and locate <i>filename.sqlite</i>
+        </ListItem>
+      </OrderedList>
+    ),
   },
 ];
 
@@ -83,7 +139,7 @@ const Walkthrough: React.FC = () => {
               stepDetails={stepDetails}
             />
             {instructions.map((details, index) => (
-              <Box key={index} display={step != index ? "none" : ""}>
+              <Box p="5" key={index} display={step != index ? "none" : ""}>
                 {details.body}
               </Box>
             ))}
