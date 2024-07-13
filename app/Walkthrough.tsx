@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 import WalkthroughStepper from "./WalkthroughStepper";
 
@@ -96,6 +96,16 @@ const Walkthrough: React.FC = () => {
   const [step, setStep] = useState(0);
   const [stepDetails, setStepDetails] = useState(instructions);
 
+  const handleClose = () => {
+    onClose();
+    localStorage.setItem("skipWalkthrough", "true");
+  };
+
+  const skipWalkthrough = () => {
+    if (localStorage) return localStorage.getItem("skipWalkthrough") == "true";
+    else return false;
+  };
+
   const incrementStep = () => {
     if (step != stepDetails.length - 1) {
       setStep(step + 1);
@@ -117,6 +127,7 @@ const Walkthrough: React.FC = () => {
   };
 
   const openWalkthrough = () => {
+    localStorage.removeItem("skipWalkthrough");
     onOpen();
     setStep(0);
   };
@@ -127,7 +138,7 @@ const Walkthrough: React.FC = () => {
         Show Walkthrough
       </Button>
 
-      <Modal size="lg" isOpen={isOpen} onClose={onClose}>
+      <Modal size="lg" isOpen={!skipWalkthrough()} onClose={handleClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Walkthrough</ModalHeader>
@@ -165,14 +176,14 @@ const Walkthrough: React.FC = () => {
             <Button
               display={isLastStep() ? "none" : ""}
               variant="ghost"
-              onClick={onClose}
+              onClick={handleClose}
             >
               Skip
             </Button>
             <Button
               display={isLastStep() ? "" : "none"}
               colorScheme="green"
-              onClick={onClose}
+              onClick={handleClose}
             >
               Done
             </Button>
