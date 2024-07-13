@@ -77,7 +77,11 @@ const Walkthrough: React.FC = () => {
           <ModalHeader>Walkthrough</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <WalkthroughStepper setStep={setStep} stepDetails={stepDetails} />
+            <WalkthroughStepper
+              step={step}
+              setStep={setStep}
+              stepDetails={stepDetails}
+            />
             {instructions.map((details, index) => (
               <Box key={index} display={step != index ? "none" : ""}>
                 {details.body}

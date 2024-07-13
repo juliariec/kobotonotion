@@ -16,28 +16,20 @@ import {
 } from "@chakra-ui/react";
 
 interface WalkthroughStepperProps {
+  step: number;
   setStep: (num: number) => void;
   stepDetails: Array<any>;
 }
 
 const WalkthroughStepper: React.FC<WalkthroughStepperProps> = ({
+  step,
   setStep,
   stepDetails,
 }) => {
-  const { activeStep, setActiveStep } = useSteps({
-    index: 0,
-    count: stepDetails.length,
-  });
-
-  const handleClick = (idx: number) => () => {
-    setActiveStep(idx);
-    setStep(idx);
-  };
-
   return (
-    <Stepper size="sm" index={activeStep}>
+    <Stepper size="sm" index={step}>
       {stepDetails.map((step, index) => (
-        <Step key={index} onClick={handleClick(index)}>
+        <Step key={index} onClick={() => setStep(index)}>
           <StepIndicator>
             <StepStatus
               complete={<StepIcon />}
@@ -48,7 +40,6 @@ const WalkthroughStepper: React.FC<WalkthroughStepperProps> = ({
 
           <Box>
             <StepTitle>{step.title}</StepTitle>
-            {/* <StepDescription>{step.description}</StepDescription> */}
           </Box>
 
           <StepSeparator />
