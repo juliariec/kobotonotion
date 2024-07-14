@@ -25,8 +25,8 @@ export const DATABASE_FILE = "databaseFile";
 const FormComponent: React.FC = () => {
   const [integrationToken, setIntegrationToken] = useState<string>("");
   const [databaseId, setDatabaseId] = useState<string>("");
-
   const [file, setFile] = useState<File | null>(null);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [results, setResults] = useState<Result[]>();
   const toast = useToast();

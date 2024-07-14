@@ -9,6 +9,8 @@ export const getHighlightsQuery = `
 SELECT Bookmark.Text
 FROM Bookmark
 INNER JOIN content ON Bookmark.VolumeID = content.ContentID
-WHERE content.ContentID = ?
+WHERE content.ContentID = @contentId
 ORDER BY content.DateCreated DESC
 `;
+
+// file:///mnt/onboard/Digital Editions/Alone in Berlin.epub

@@ -1,5 +1,5 @@
 export interface Book {
-  ContentId: string;
+  ContentID: string;
   Title: string;
   Author: string;
 }
@@ -10,5 +10,5 @@ export interface Highlight {
 
 export interface Result {
   title: string;
-  status: "uploaded" | "not_found" | "skipped";
+  status: "uploaded" | "duplicates" | "skipped";
 }

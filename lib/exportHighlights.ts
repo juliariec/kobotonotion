@@ -54,7 +54,7 @@ async function exportHighlights(
         if (response.results.length !== 1) {
           bookResults.push({
             title,
-            status: response.results.length > 1 ? "skipped" : "not_found",
+            status: response.results.length > 1 ? "duplicates" : "skipped",
           });
           continue;
         }
@@ -62,10 +62,9 @@ async function exportHighlights(
         const pageId = response.results[0].id;
         const blocks = [];
 
-        // Retrieve highlights for the book
         const highlightsList = db
           .prepare(getHighlightsQuery)
-          .all(book.ContentId) as Highlight[];
+          .all({ contentId: book.ContentID }) as Highlight[];
 
         // Start with a block for the heading
         blocks.push({
