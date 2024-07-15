@@ -1,12 +1,6 @@
 import exportHighlights from "@/lib/exportHighlights";
 import { NextResponse } from "next/server";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(req: Request) {
   const contentType = req.headers.get("content-type");
 
