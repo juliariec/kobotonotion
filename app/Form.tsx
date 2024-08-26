@@ -1,34 +1,42 @@
 "use client";
-import React, { useState } from "react";
+import { Result } from "@/lib/interfaces";
 import {
   Box,
   Button,
   FormControl,
   FormLabel,
   Input,
-  useToast,
   Spinner,
   Table,
-  Thead,
   Tbody,
-  Tr,
-  Th,
   Td,
+  Th,
+  Thead,
+  Tr,
+  useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { ERROR_TOAST, MISSING_TOAST, SUCCESS_TOAST } from "./toasts";
 
-interface Result {
-  id: string;
-  status: string;
-}
+export const INTEGRATION_TOKEN = "integrationToken";
+export const DATABASE_ID = "databaseId";
+export const DATABASE_FILE = "databaseFile";
 
 const FormComponent: React.FC = () => {
   const [integrationToken, setIntegrationToken] = useState<string>("");
   const [databaseId, setDatabaseId] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
+
   const [loading, setLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<Result[] | null>(null);
+  const [results, setResults] = useState<Result[]>();
   const toast = useToast();
+
+  useEffect(() => {
+    if (localStorage && !!localStorage.getItem(INTEGRATION_TOKEN))
+      setIntegrationToken(localStorage.getItem(INTEGRATION_TOKEN) as string);
+    if (localStorage && !!localStorage.getItem(DATABASE_ID))
+      setDatabaseId(localStorage.getItem(DATABASE_ID) as string);
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0] || null;
@@ -37,53 +45,43 @@ const FormComponent: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
     if (!integrationToken || !databaseId || !file) {
-      toast({
-        title: "Missing information",
-        description: "Please fill out all fields and upload a valid file.",
-        status: "warning",
-        duration: 3000,
-        isClosable: true,
-      });
+      toast(MISSING_TOAST);
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64File = reader.result as string;
+    localStorage.setItem(INTEGRATION_TOKEN, integrationToken);
+    localStorage.setItem(DATABASE_ID, databaseId);
 
+    const formData = new FormData();
+    formData.append("token", integrationToken);
+    formData.append("dbid", databaseId);
+    formData.append("file", file);
+
+    try {
       setLoading(true);
-      setResults(null);
+      setResults([]);
 
-      try {
-        const response = await axios.post("/api/submit", {
-          integrationToken,
-          databaseId,
-          sqliteFile: base64File,
-        });
+      const response = await fetch("/api/submit", {
+        method: "POST",
+        body: formData,
+      });
 
-        setResults(response.data.results);
-        toast({
-          title: "Success",
-          description: "Your data has been submitted successfully.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "There was an error submitting your data.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        console.log("response not ok");
+        toast(ERROR_TOAST);
       }
-    };
 
-    reader.readAsDataURL(file);
+      const data = await response.json();
+      setResults(data.results);
+      toast(SUCCESS_TOAST);
+    } catch (error) {
+      console.log("error");
+      toast(ERROR_TOAST);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -109,7 +107,7 @@ const FormComponent: React.FC = () => {
 
         <FormControl isRequired mb={4}>
           <FormLabel>SQLite File</FormLabel>
-          <Input type="file" accept=".sqlite" onChange={handleFileChange} />
+          <Input type="file" onChange={handleFileChange} />
         </FormControl>
 
         <Button
@@ -122,25 +120,27 @@ const FormComponent: React.FC = () => {
         </Button>
       </form>
 
-      {results && (
+      {!!results?.length ? (
         <Box mt={8}>
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>ID</Th>
+                <Th>Title</Th>
                 <Th>Status</Th>
               </Tr>
             </Thead>
             <Tbody>
               {results.map((result) => (
-                <Tr key={result.id}>
-                  <Td>{result.id}</Td>
+                <Tr key={result.title}>
+                  <Td>{result.title}</Td>
                   <Td>{result.status}</Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </Box>
+      ) : (
+        <>No results.</>
       )}
     </Box>
   );
