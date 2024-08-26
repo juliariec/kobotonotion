@@ -85,7 +85,7 @@ const FormComponent: React.FC = () => {
   };
 
   return (
-    <Box p={4} maxWidth="500px" mx="auto">
+    <Box p={4} mx="auto">
       <form onSubmit={handleSubmit}>
         <FormControl isRequired mb={4}>
           <FormLabel>Integration Token</FormLabel>
